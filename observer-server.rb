@@ -1,3 +1,6 @@
+#!/usr/bin/env ruby
+# =========================================================
+File.write('/etc/slack-observer.pid', Process.pid)
 require 'bundler/setup'
 require 'uri'
 require 'net/http'
@@ -67,7 +70,7 @@ class ObserverSinatra < Sinatra::Base
 
   get '/creds.html' do
     $log.debug("|Creds| Params: #{params.inspect}")
-    #   if params['token'] != "Uuwa3I3hmAnYuM5LhSLRYame" return end
+#   if params['token'] != "Uuwa3I3hmAnYuM5LhSLRYame" return end
     status 200
 
     return "congrats!" #{text[0]}  whooop whoopp derp #{text[1]}   #{channelid}"

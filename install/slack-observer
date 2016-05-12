@@ -1,0 +1,84 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          defaultdaemon
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INF
+cd /opt/slackObserver/
+#########################################
+start (){
+  if [ -f /etc/slack-observer.pid ]; then
+    ps -p `cat /etc/slack-observer.pid` >> /dev/null
+    if [ $? -eq 0 ]; then
+      echo "Service is already running!"
+      return 0
+    fi
+  fi
+  /opt/slackObserver/observer-server.rb  &
+  #echo $? > /etc/slack-observer.pid
+  echo "Daemon Started"
+}
+
+##################################################
+
+stop () {
+  # Check Existance of the Pid
+  if [ ! -f /etc/descry-admin.pid ]; then
+    echo "No Pid file, can't tell if it is running"
+    return 0
+  fi
+  # See if the pid is valid, and there is a running process
+  kill -0 `cat /etc/descry-admin.pid`
+
+  if [ $? -eq 1 ]; then
+    echo "Not running"
+    cp -v /etc/slack-observer.pid /etc/slack-observer-old.pid
+    rm -v /etc/slack-observer.pid
+    return 1
+  fi
+
+
+  kill `cat /etc/slack-observer.pid`
+
+  # Check if its ended
+  ps -p `cat /etc/slack-observer.pid` >> /dev/null
+  until [  $? -eq 1 ]; do
+    echo "Waiting for service to close"
+    sleep 1
+    ps -p `cat /etc/slack-observer.pid` >> /dev/null
+  done
+
+  echo "service terminated"
+  rm /etc/slack-observer.pid
+}
+#######################################################
+restart () {
+  stop
+  start
+}
+########################################################
+
+if [ $# -lt 1 ]; then
+  echo "Usage: [start/stop/restart]"
+fi
+
+case $1 in
+  start)
+  start
+  ;;
+  restart)
+  restart
+  ;;
+  stop)
+  stop
+  ;;
+  *)
+  echo -e "Usage: [start/stop/restart]"
+  ;;
+esac
+
+cd -
